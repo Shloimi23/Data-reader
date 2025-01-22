@@ -37,7 +37,7 @@ def reading_from_the_link(url):
                          row.find("span", {"class": "nopchange"}) or \
                          row.find("span", {"class": "green bgg bggreen"}) or \
                          row.find("span", {"class": "red bgr bgred"})
-        print(f"שורת שינוי יומי: {row.find('td', {'class': 'changeP'})}")
+        #print(f"שורת שינוי יומי: {row.find('td', {'class': 'changeP'})}")
 
         change_value = "0%"
         if change_element and change_element.text.strip():
