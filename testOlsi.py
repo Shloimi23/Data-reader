@@ -88,8 +88,7 @@ def compare_and_color_changes(file_name, current_df, previous_df):
                     fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
                     for cell in row:
                         cell.fill = fill
-                        print(cell.value)
-                        print(f"השורה {row_idx} נצבעה (שם מניה: {current_name})")
+                        #print(f"השורה {row_idx} נצבעה (שם מניה: {current_name})")
             except ValueError:
                 continue
 
@@ -158,6 +157,7 @@ def waiting_for_a_full_hour():
     time.sleep(wait_time)
 
 
+# The main function that causes the program to start running
 def main(url):
     while True:
         print(f"מתחיל את התהליך בשעה: {datetime.now().strftime('%H:%M:%S')}")
