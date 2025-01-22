@@ -43,7 +43,7 @@ def reading_from_the_link(url):
         if change_element and change_element.text.strip():
             change_value = change_element.text.strip()
 
-        print(f"שם מניה: {name}, מחיר: {price}, סוג מסחר: {time}, שינוי יומי: {change_value}")
+        #print(f"שם מניה: {name}, מחיר: {price}, סוג מסחר: {time}, שינוי יומי: {change_value}")
         data.append({"שם מניה": name, "מחיר": price, "שעה": time, "שינוי יומי": change_value})
 
     create_excel_file(data)
