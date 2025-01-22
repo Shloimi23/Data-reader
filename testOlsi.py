@@ -26,7 +26,6 @@ def reading_from_the_link(url):
     data = []
 
     for row in rows:
-        print(row)
         name = row.find("td", {"class": "qName"}).find("a").text.strip() # פה אני מכניס את שם המניה על ידי מיון לפי שם הclass
         price = row.find("td", {"class": "last"}).text.strip() # מוצא את המחיר של המניה
         time_element = row.find("td", {"class": "lrtime"})
@@ -50,7 +49,7 @@ def create_excel_file(data):
 
     # שמירת הקובץ הנוכחי
     df.to_excel(file_name, index=False, engine="openpyxl")
-
+    sort_excel_by_change(file_name)
     # אם קיים קובץ קודם, לבצע השוואה
     if os.path.exists(PREVIOUS_FILE):
         previous_df = pd.read_excel(PREVIOUS_FILE)
@@ -60,7 +59,6 @@ def create_excel_file(data):
     df.to_excel(PREVIOUS_FILE, index=False, engine="openpyxl")
     print(f"הנתונים נשמרו בהצלחה בקובץ {file_name}")
     print(f"קובץ האקסל נשמר בתיקייה: {os.getcwd()}")
-    sort_excel_by_change(file_name)
 
 
 
@@ -77,19 +75,25 @@ def compare_and_color_changes(file_name, current_df, previous_df):
         if current_name in previous_df["שם מניה"].values:
             # חיפוש השינוי מהקובץ הקודם
             previous_change = previous_df.loc[previous_df["שם מניה"] == current_name, "שינוי יומי"].values[0]
+
+            # המרה לערכים מספריים
             current_change = float(current_change.replace("%", "").strip()) if current_change else 0.0
             previous_change = float(previous_change.replace("%", "").strip()) if previous_change else 0.0
 
             try:
                 # בדיקה אם השינוי גדל ביותר מ-1% בהשוואה לקובץ הקודם
-                if abs(current_change - previous_change)  > 1:
+                if abs(current_change - previous_change) > 1 :
                     fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
                     for cell in row:
                         cell.fill = fill
+                        print(cell.value)
+                        print(f"השורה {row_idx} נצבעה (שם מניה: {current_name})")
             except ValueError:
                 continue
 
     wb.save(file_name)
+    send_email_with_attachment(file_name)
+    print(f"Workbook saved successfully: {file_name}")
 
 
 
@@ -104,12 +108,14 @@ def sort_excel_by_change(file_name):
     # מיון לפי עמודת "שינוי" בסדר עולה
     df = df.sort_values(by="שינוי יומי", ascending=False)
 
-    # שמירת הטבלה הממוינת לקובץ חדש או דריסת הקיים
-    sorted_file_name = file_name.replace(".xlsx", "_sorted.xlsx")
-    df.to_excel(sorted_file_name, index=False, engine="openpyxl")
+    # הוספת סימן "%" חזרה לערכי עמודת "שינוי יומי"
+    df["שינוי יומי"] = df["שינוי יומי"].astype(str) + "%"
 
-    print(f"הקובץ מוין לפי עמודת 'שינוי יומי' ונשמר בשם {sorted_file_name}")
-    send_email_with_attachment(sorted_file_name)
+    # שמירת הטבלה הממוינת בקובץ המקורי
+    df.to_excel(file_name, index=False, engine="openpyxl")
+
+    print(f"הקובץ מוין לפי עמודת 'שינוי יומי' ונשמר בקובץ המקורי: {file_name}")
+
 
 
 def send_email_with_attachment(file_path):
@@ -163,7 +169,7 @@ def main(url):
         print(f"מתחיל את התהליך בשעה: {datetime.now().strftime('%H:%M:%S')}")
         #waiting_for_a_full_hour()
         reading_from_the_link(url)
-        time.sleep(300)
+        time.sleep(600)
 
 # URL של העמוד
 url = "https://www.globes.co.il/portal/instrument.aspx?instrumentid=373853&feeder=1&mode=composition&showAll=true#jt40991"
