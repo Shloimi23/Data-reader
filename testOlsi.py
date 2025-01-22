@@ -16,28 +16,36 @@ from email import encoders
 RECIPIENT_EMAIL = "sh5684770@gmail.com"
 PREVIOUS_FILE = "previous_data.xlsx"
 
-
 def reading_from_the_link(url):
-    response = requests.get(url) # קורא נתונים מהכתובת url ומכניס אותם למשתנה response
-
-    soup = BeautifulSoup(response.text, "html.parser") # יוצר אובייקט שמייצג את תוכן הhtml שהתקבל מהאתר
-    rows = soup.find_all("tr", {"class": "data"}) # מכניס לrows את כל התגיות tr שיש בתוכם class:data
+    response = requests.get(url)  # קריאת הנתונים מהאתר
+    soup = BeautifulSoup(response.text, "html.parser")  # עיבוד ה-HTML
+    rows = soup.find_all("tr", {"class": "data"})  # איתור כל השורות הרצויות
 
     data = []
 
     for row in rows:
-        name = row.find("td", {"class": "qName"}).find("a").text.strip() # פה אני מכניס את שם המניה על ידי מיון לפי שם הclass
-        price = row.find("td", {"class": "last"}).text.strip() # מוצא את המחיר של המניה
+        name = row.find("td", {"class": "qName"}).find("a").text.strip()  # שם המניה
+        price = row.find("td", {"class": "last"}).text.strip()  # מחיר המניה
         time_element = row.find("td", {"class": "lrtime"})
-        time = time_element.text.strip() if time_element else "לא זמין"
+        time = time_element.text.strip() if time_element else "לא זמין"  # הזמן
 
-        # מוצא את הזמן של העסקה
-        change_element = row.find("span", {"class": "red bgr"}) or row.find("span", {"class": "green bgg"}) or row.find("span", {"class": "nopchange"})
+        # שליפת השינוי היומי
+        change_element = row.find("span", {"class": "red bgr"}) or \
+                         row.find("span", {"class": "green bgg"}) or \
+                         row.find("span", {"class": "nopchange"}) or \
+                         row.find("span", {"class": "green bgg bggreen"}) or \
+                         row.find("span", {"class": "red bgr bgred"})
+        print(f"שורת שינוי יומי: {row.find('td', {'class': 'changeP'})}")
+
         change_value = "0%"  # ערך ברירת מחדל
         if change_element and change_element.text.strip():  # בדיקה אם האלמנט קיים ויש לו טקסט
             change_value = change_element.text.strip()
+
+
+        # הוספת הנתונים לטבלה
         print(f"שם מניה: {name}, מחיר: {price}, סוג מסחר: {time}, שינוי יומי: {change_value}")
-        data.append({"שם מניה": name, "מחיר": price, "שעה": time, "שינוי יומי": change_value })
+        data.append({"שם מניה": name, "מחיר": price, "שעה": time, "שינוי יומי": change_value})
+
     create_excel_file(data)
 
 
